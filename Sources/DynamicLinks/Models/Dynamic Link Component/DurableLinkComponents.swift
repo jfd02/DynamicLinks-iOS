@@ -46,10 +46,15 @@ public final class DynamicLinkComponents: NSObject, @unchecked Sendable {
         self.analyticsParameters = analyticsParameters
     }
 
+    // .urlQueryAllowed keeps "&" and "=", so a link with its own query split into extra parameters.
+    private static let queryValueAllowed = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+    )
+
     public var url: URL? {
         let queryString = buildQueryDict().compactMap { key, value in
-            guard let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                let encodedValue = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            guard let encodedKey = key.addingPercentEncoding(withAllowedCharacters: Self.queryValueAllowed),
+                let encodedValue = value.addingPercentEncoding(withAllowedCharacters: Self.queryValueAllowed)
             else {
                 return nil
             }
@@ -77,7 +82,7 @@ public final class DynamicLinkComponents: NSObject, @unchecked Sendable {
                         case 1: stringValue = "SHORT"
                         default: stringValue = "UNGUESSABLE"
                         }
-                        dict[key] = stringValue
+                        dict["path"] = stringValue
                     }
                 } else {
                     if let stringValue = value as? String {
